@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bluesky Account Role</title>
+<link rel="icon" href="__BASE_URL__/favicon.ico">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#0f1115; color:#e8eaed;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    font-size:14px; line-height:1.5; padding:24px; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  .sub { color:#8a93a4; font-size:13px; margin:0 0 22px; }
+  .q { font-weight:700; font-size:14px; margin:0 0 9px; }
+  .opts { display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr));
+    gap:7px; margin-bottom:10px; }
+  .opt { display:flex; gap:8px; align-items:flex-start;
+    border:1px solid #262b36; border-radius:8px; padding:8px 10px;
+    cursor:pointer; background:#14171f; transition:border-color .1s; }
+  .opt:hover { border-color:#3a4150; }
+  .opt.sel { border-color:#1083fe; background:#0e1a2c; }
+  .opt input { margin:1px 0 0; accent-color:#1083fe; flex:none; }
+  .opt .t { font-weight:600; font-size:12.5px; line-height:1.25; }
+  .opt .d { color:#8a93a4; font-size:11px; line-height:1.3; margin-top:1px; }
+  .extra { margin:0 0 6px; }
+  .inline { color:#cfd6e4; font-size:13px; padding:9px 11px;
+    border:1px solid #262b36; border-radius:8px; background:#14171f; }
+  .inline input { width:60px; background:#0b0d12; color:#e8eaed;
+    border:1px solid #2a2f3a; border-radius:6px; padding:5px 7px; font-size:13px; }
+  .blk { margin:22px 0; }
+  .blk label { display:block; font-weight:700; margin:0 0 8px; }
+  select, input[type=text], input[type=password], input[type=number] {
+    background:#0b0d12; color:#e8eaed;
+    border:1px solid #2a2f3a; border-radius:6px; padding:8px 10px; font-size:13px; }
+  select:focus, input:focus { outline:1px solid #1083fe; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  button { background:#262b36; color:#e8eaed; border:0; border-radius:7px;
+    padding:8px 13px; font-size:13px; font-weight:600; cursor:pointer; }
+  button:hover { background:#313845; }
+  button.primary { background:#1083fe; color:#fff; padding:11px 22px; font-size:14px; }
+  button.primary:hover { background:#2a93ff; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  button:disabled:hover { background:#262b36; }
+  button.primary:disabled:hover { background:#1083fe; }
+  button.x { background:none; color:#8a93a4; padding:4px 6px; }
+  button.x:hover { color:#fca5a5; }
+  .connectcta { border:1px dashed #3a4150; border-radius:10px; padding:18px;
+    background:#13161e; }
+  .connectcta p { color:#9aa3b2; margin:4px 0 14px; font-size:13px; }
+  .connectcta .row { gap:8px; }
+  .connectcta input { flex:1 1 200px; min-width:0; }
+  .reconnect { background:#3a2a14; border:1px solid #5c4126;
+    color:#fbbf24; padding:8px 12px; border-radius:8px; font-size:12.5px;
+    margin-top:8px; }
+  .share { background:#0d1721; border:1px solid #1f3346; border-radius:10px;
+    padding:13px 15px; margin:22px 0; font-size:13px; color:#a9c3d8; }
+  .share b { color:#dbeafe; }
+  .copybox { display:flex; gap:8px; margin-top:9px; align-items:stretch; }
+  .copybox code { flex:1; min-width:0; background:#0b0d12; border:1px solid #234; border-radius:6px;
+    padding:8px 10px; font-size:12px; overflow:auto; white-space:nowrap; }
+  .copybox .btn-open { background:#262b36; color:#e8eaed; border:0; border-radius:7px;
+    padding:8px 13px; font-size:13px; font-weight:600; cursor:pointer;
+    text-decoration:none; display:inline-flex; align-items:center;
+    white-space:nowrap; flex:0 0 auto; }
+  .copybox .btn-open:hover { background:#313845; }
+  .sup { background:#171b25; border:1px solid #2a2f3a; border-radius:10px;
+    padding:13px 15px; margin:14px 0; font-size:13px; color:#cfd6e4; }
+  .sup b { color:#e8eaed; }
+  .sup .vp { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:7px; margin-top:10px; }
+  .sup .vp label { display:flex; gap:8px; align-items:flex-start;
+    border:1px solid #262b36; border-radius:8px; padding:8px 10px;
+    cursor:pointer; background:#14171f; transition:border-color .1s; }
+  .sup .vp label:hover { border-color:#3a4150; }
+  .sup .vp label.sel { border-color:#1083fe; background:#0e1a2c; }
+  .sup .vp input { margin:1px 0 0; accent-color:#1083fe; flex:none; }
+  .sup .vp .t { font-weight:600; font-size:12.5px; line-height:1.25; }
+  .sup .vp .d { color:#8a93a4; font-size:11px; line-height:1.3; margin-top:1px; }
+  .sup .saved { color:#7fb2ff; font-size:11.5px; margin-left:8px; opacity:0; transition:opacity .15s; }
+  .sup .saved.show { opacity:1; }
+  .adv { margin:6px 0 0; }
+  .grp { border:1px solid #2a2f3a; border-radius:9px; padding:11px;
+    margin:8px 0; background:#13161e; }
+  .grp-h { display:flex; justify-content:space-between; color:#8a93a4;
+    font-size:12px; margin-bottom:6px; }
+  .or { text-align:center; color:#7a8497; font-weight:700; font-size:11px;
+    letter-spacing:.08em; margin:4px 0; }
+  .cond { display:flex; gap:7px; align-items:center; flex-wrap:wrap;
+    padding:6px 0; border-bottom:1px solid #20242e; }
+  .cond:last-of-type { border-bottom:0; }
+  .hint { color:#7a8497; font-size:11px; flex-basis:100%; margin-left:2px; }
+  .foot { display:flex; justify-content:space-between; align-items:center;
+    gap:14px; flex-wrap:wrap; margin-top:26px; padding-top:16px;
+    border-top:1px solid #232734; }
+  .foot-btns { display:flex; gap:10px; align-items:center; margin-left:auto; }
+  .count { color:#8a93a4; font-size:12.5px; }
+  .count .ok { color:#7fb2ff; font-weight:600; }
+  .toast { padding:10px 12px; border-radius:8px; font-size:13px; margin-top:12px; }
+  .toast.e { background:#2a1518; border:1px solid #5c2630; color:#f6b8c0; }
+  .hidden { display:none !important; }
+  .acct { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .acct .avatar { width:28px; height:28px; border-radius:50%; background:#262b36;
+    display:inline-flex; align-items:center; justify-content:center; color:#1083fe;
+    font-weight:700; font-size:13px; flex:none; }
+  .acct .name { font-weight:600; }
+  .acct .h { color:#8a93a4; font-size:12.5px; }
+  @media (max-width: 560px) {
+    body { padding:16px 14px; font-size:14px; }
+    h1 { font-size:17px; }
+    .sub { margin-bottom:18px; }
+    .opts { grid-template-columns:1fr; gap:6px; }
+    .opt { padding:9px 11px; }
+    .inline { font-size:13px; padding:9px 11px; }
+    .inline input { width:64px; }
+    .blk { margin:18px 0; }
+    select, input[type=text], input[type=password], input[type=number] { font-size:14px; padding:9px 10px; }
+    select { max-width:100%; width:100%; }
+    .row { gap:8px; }
+    .row > select, .row > input { flex:1 1 100%; min-width:0; }
+    .row > button { flex:0 0 auto; }
+    .copybox { flex-wrap:wrap; gap:8px; }
+    .copybox code { flex:1 1 100%; white-space:normal; word-break:break-all; font-size:12px; }
+    .copybox .btn-open, .copybox button { flex:1 1 0; justify-content:center; }
+    .share, .sup { padding:12px 13px; }
+    .sup .vp { grid-template-columns:1fr; }
+    .grp { padding:10px; }
+    .cond { gap:6px; padding:8px 0; }
+    .cond > select, .cond > .vw { flex:1 1 100%; min-width:0; }
+    .cond > .vw { display:flex; gap:6px; flex-wrap:wrap; }
+    .cond > .vw > input, .cond > .vw > select { flex:1 1 0; min-width:0; }
+    .cond .hint { font-size:11px; margin-left:0; }
+    .cond [data-del] { margin-left:auto; }
+    .foot { gap:10px; }
+    .count { flex:1 1 100%; order:1; }
+    .foot-btns { order:2; width:100%; margin-left:0; }
+    .foot-btns > button { flex:1 1 0; }
+    button.primary { padding:11px 16px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"><p class="sub">Loading…</p></div>
+
+<script>
+const BASE_URL="__BASE_URL__", GUILD_ID="__GUILD_ID__", ROLE_ID="__ROLE_ID__";
+const IFRAME_TOKEN="__IFRAME_TOKEN__", IS_EMBEDDED=!!IFRAME_TOKEN;
+const VERIFY_URL = BASE_URL + "/verify";
+
+function postToHost(m){ if(!IS_EMBEDDED) return; try{ parent.postMessage(m,'*'); }catch(_){} }
+function postHeight(){ postToHost({type:'rl:resize',height:Math.max(
+  document.documentElement.scrollHeight,document.body.scrollHeight)}); }
+const postDirty=d=>postToHost({type:'rl:dirty',dirty:!!d});
+const postSaved=()=>postToHost({type:'rl:saved'});
+const postToast=(m,k)=>postToHost({type:'rl:toast',message:String(m||''),kind:k||'error'});
+if(IS_EMBEDDED&&'ResizeObserver'in window) new ResizeObserver(postHeight).observe(document.body);
+window.addEventListener('load',postHeight);
+
+function apiHeaders(x){ const h=Object.assign({'Content-Type':'application/json'},x||{});
+  if(IFRAME_TOKEN) h['Authorization']='Bearer '+IFRAME_TOKEN; return h; }
+function apiCreds(){ return IS_EMBEDDED?'omit':'include'; }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function copyText(text){
+  const fallback=()=>{ try{
+    const ta=document.createElement('textarea'); ta.value=text;
+    ta.setAttribute('readonly',''); ta.style.position='fixed';
+    ta.style.top='0'; ta.style.left='0'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,text.length);
+    const ok=document.execCommand('copy'); document.body.removeChild(ta); return ok;
+  }catch(_){ return false; } };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text).then(()=>true,()=>fallback());
+  }
+  return Promise.resolve(fallback());
+}
+function wireCopy(btnId,text){ const b=document.getElementById(btnId); if(!b) return;
+  b.addEventListener('click',()=>{ copyText(text).then(ok=>{
+    b.textContent=ok?'Copied ✓':'Press Ctrl+C';
+    setTimeout(()=>b.textContent='Copy link',1500); }); }); }
+
+let state=null, dirty=false, refreshInFlight=false, supPending=false;
+function setDirty(d){ dirty=d; postDirty(d);
+  const s=document.getElementById('save'); if(s) s.disabled=!d; }
+function ruleKey(c){ return JSON.stringify({
+  a:c.bsky_account_did??null,
+  g:!!c.grant_on_any_relation,
+  r:c.grant_on_any_relation?[]:(c.groups||[]),
+}); }
+function recomputeDirty(){
+  if(!state||!state._edit||!state.config) return;
+  setDirty(ruleKey(state._edit)!==ruleKey(state.config));
+}
+
+/* preset id -> friendly copy + rule shape */
+function c(t,o,v){ return {target:t,operator:o,value:v,value_end:null}; }
+function presets(){ return [
+ {id:"anyone", t:"Anyone who linked their Bluesky", d:"Simplest option. No account selection needed.",
+  make:()=>({grant:true,groups:[]})},
+ {id:"followers", t:"People who follow my Bluesky", d:"Anyone following the connected account.",
+  make:()=>({grant:false,groups:[[c('is_follower','eq',true)]]})},
+ {id:"mutuals", t:"Mutuals only", d:"Both follow each other.",
+  make:()=>({grant:false,groups:[[c('is_mutual','eq',true)]]})},
+ {id:"loyal", t:"Long-time followers", d:"Followed for at least N days.", n:30,
+  make:n=>({grant:false,groups:[[c('is_follower','eq',true),c('follow_age_days','gte',n||30)]]})},
+ {id:"starter", t:"On a starter pack", d:"Members of a specific starter pack.",
+  needs_pack:true,
+  make:uri=>({grant:false,groups:[[c('is_on_starter_pack','eq',uri||'')]]})},
+ {id:"list", t:"On a list", d:"Members of a specific Bluesky list.",
+  needs_list:true,
+  make:uri=>({grant:false,groups:[[c('is_on_list','eq',uri||'')]]})},
+ {id:"custom", t:"Advanced rule", d:"Combine several conditions with AND / OR.", make:null},
+];}
+function needsAccount(id){ return id!=='anyone' && id!=='anyone_unset'; }
+
+async function load(){
+  try{
+    const r=await fetch(`${BASE_URL}/admin/${GUILD_ID}/role/${ROLE_ID}/data`,
+      {headers:apiHeaders(),credentials:apiCreds(),cache:'no-store'});
+    if(!r.ok){ const e=await r.json().catch(()=>({error:r.status}));
+      document.getElementById('app').innerHTML=`<div class="toast e">${esc(e.error||('HTTP '+r.status))}</div>`;
+      postHeight(); return; }
+    state=await r.json();
+    state._edit=JSON.parse(JSON.stringify(state.config));
+    state._preset=detectPreset(state._edit);
+    state._n=guessN(state._edit);
+    if(state._preset==='anyone_unset'){
+      // Align edit buffer with the displayed "anyone" preset so a single
+      // Save commits the sensible default instead of re-saving "grant nobody".
+      state._edit.grant_on_any_relation=true;
+      state._edit.groups=[];
+      state._preset='anyone';
+      recomputeDirty();
+    }
+    render(); autoPreview();
+  }catch(e){ document.getElementById('app').innerHTML=
+    `<div class="toast e">Network error: ${esc(String(e))}</div>`; }
+}
+function detectPreset(cfg){
+  if(cfg.grant_on_any_relation) return 'anyone';
+  const g=cfg.groups||[];
+  if(g.length===0) return 'anyone_unset';
+  if(g.length===1){ const cs=g[0].conditions||[];
+    const only=t=>cs.length===1&&cs[0].target===t&&cs[0].operator==='eq'&&cs[0].value===true;
+    if(only('is_follower'))return'followers';
+    if(only('is_mutual'))return'mutuals';
+    if(cs.length===1&&cs[0].target==='is_on_starter_pack'&&cs[0].operator==='eq')return'starter';
+    if(cs.length===1&&cs[0].target==='is_on_list'&&cs[0].operator==='eq')return'list';
+    if(cs.length===2&&cs[0].target==='is_follower'&&cs[1].target==='follow_age_days'&&cs[1].operator==='gte')return'loyal';
+  }
+  return 'custom';
+}
+function guessN(cfg){ try{ return Number(cfg.groups[0].conditions.find(x=>x.target==='follow_age_days').value)||30; }catch(_){ return 30; } }
+function targetByKey(k){ return state.targets.find(t=>t.key===k); }
+function opByKey(k){ return state.operators.find(o=>o.key===k); }
+function opsForKind(k){ return state.operators.filter(o=>o.valid_for[k]); }
+
+function render(){
+  const cfg=state._edit, app=document.getElementById('app');
+  const accts=state.accounts||[];
+  const cur=state._preset, showAcct=needsAccount(cur);
+  // Auto-bind to the first connected account if a relation-rule is picked
+  // and no account is selected — keeps the "newbie click → save" path 0-step.
+  if(showAcct && accts.length>0 &&
+     (!cfg.bsky_account_did ||
+      !accts.find(a=>a.did===cfg.bsky_account_did))){
+    cfg.bsky_account_did=accts[0].did; recomputeDirty();
+  }
+  const sel=accts.find(a=>a.did===cfg.bsky_account_did);
+
+  const optsHtml=presets().map(p=>{
+    const on=(cur===p.id)||(p.id==='anyone'&&cur==='anyone_unset');
+    return `<label class="opt ${on?'sel':''}">
+      <input type="radio" name="who" value="${p.id}" ${on?'checked':''}>
+      <div><div class="t">${esc(p.t)}</div><div class="d">${esc(p.d)}</div></div></label>`;
+  }).join('');
+
+  let extra='';
+  if(cur==='loyal') extra=`<div class="extra"><div class="inline">Followed for at least
+    <input type="number" id="loyaln" min="1" value="${state._n}"> days</div></div>`;
+  else if(cur==='starter') extra=`<div class="extra"><div class="inline">${packPicker()}</div></div>`;
+  else if(cur==='list')    extra=`<div class="extra"><div class="inline">${listPicker()}</div></div>`;
+  else if(cur==='custom')  extra=`<div class="extra"><div class="adv" id="rule"></div></div>`;
+
+  // Public users-page server-wide setting.
+  const sup = state.users || {url:'', view_permission:'managers'};
+  const vp = sup.view_permission || 'managers';
+  const vpOpts = [
+    {id:'disabled', t:'Disabled',          d:'No one can view the users page.'},
+    {id:'managers', t:'Server managers',   d:'Only members with Manage Server.'},
+    {id:'members',  t:'All server members', d:'Anyone in this server can view.'},
+  ];
+  const usersBlk = `
+    <div class="sup">
+      <b>Public users page</b><span id="vp-saved" class="saved">Saved ✓</span>
+      <div style="margin-top:4px; color:#8a93a4; font-size:12.5px">
+        Read-only list of every linked Bluesky account in this server, with
+        their relationship to your connected account. Searchable and filterable.
+      </div>
+      ${vp!=='disabled' ? `<div class="copybox" style="margin-top:9px">
+        <code id="surl">${esc(sup.url)}</code>
+        <a class="btn-open" href="${esc(sup.url)}" target="_blank" rel="noopener noreferrer">Open</a>
+        <button id="copysup">Copy link</button></div>` : ''}
+      <div class="vp">
+        ${vpOpts.map(o=>`<label class="${o.id===vp?'sel':''}">
+          <input type="radio" name="vp" value="${o.id}" ${o.id===vp?'checked':''}>
+          <div><div class="t">${esc(o.t)}</div><div class="d">${esc(o.d)}</div></div>
+        </label>`).join('')}
+      </div>
+    </div>`;
+
+  let acctBlk='';
+  if(showAcct){
+    acctBlk = accts.length===0 ? connectForm() : connectedAcct(sel||accts[0]);
+  }
+
+  app.innerHTML=`
+    <h1>Bluesky Account Role</h1>
+    <p class="sub">Give this Discord role to people automatically, based on their Bluesky relationship to your server's Bluesky account.</p>
+    <div class="q">Who should get this role?</div>
+    <div class="opts">${optsHtml}</div>
+    ${extra}
+    ${acctBlk}
+    <div class="share"><b>One thing your members must do:</b> they have to link
+      their Bluesky account here once with a Bluesky App Password — until they
+      do, they won't get the role even if they qualify.
+      <div class="copybox"><code id="vurl">${esc(VERIFY_URL)}</code>
+        <a class="btn-open" href="${esc(VERIFY_URL)}" target="_blank" rel="noopener noreferrer">Open</a>
+        <button id="copy">Copy link</button></div>
+    </div>
+    ${usersBlk}
+    <div class="foot">
+      <span class="count" id="count"></span>
+      <div class="foot-btns">
+        <button id="preview">Preview</button>
+        <button id="save" class="primary" ${dirty?'':'disabled'}>Save</button>
+      </div>
+    </div>`;
+
+  app.querySelectorAll('input[name=who]').forEach(r=>r.addEventListener('change',()=>choose(r.value)));
+  wireConnect();
+  wireCopy('copy', VERIFY_URL);
+  wireCopy('copysup', sup.url);
+  app.querySelectorAll('input[name=vp]').forEach(r=>r.addEventListener('change',()=>setViewPerm(r.value)));
+  const ln=document.getElementById('loyaln'); if(ln) ln.addEventListener('input',e=>{
+    state._n=Math.max(1,Number(e.target.value)||1); applyPreset('loyal'); recomputeDirty(); });
+  const pp=document.getElementById('starter-pick'); if(pp) pp.addEventListener('change',e=>{
+    applyPresetUri('starter', e.target.value); });
+  const lp=document.getElementById('list-pick'); if(lp) lp.addEventListener('change',e=>{
+    applyPresetUri('list', e.target.value); });
+  document.getElementById('save').addEventListener('click',doSave);
+  document.getElementById('preview').addEventListener('click',doPreviewEdit);
+  if(cur==='custom') renderRule();
+  postHeight();
+}
+
+function packPicker(){
+  const packs=state.starter_packs||[];
+  if(packs.length===0){
+    return `<span style="color:#fbbf24">No starter packs found yet on your connected account.
+      Create one on <a href="https://bsky.app" target="_blank" rel="noopener" style="color:#7fb2ff">bsky.app</a>,
+      then click <em>Refresh</em> below.</span>`;
+  }
+  const sel=currentUri();
+  return `Use starter pack
+    <select id="starter-pick">
+      <option value="">— pick one —</option>
+      ${packs.map(p=>`<option value="${esc(p.uri)}" ${p.uri===sel?'selected':''}>${esc(p.name)}</option>`).join('')}
+    </select>`;
+}
+function listPicker(){
+  const lists=state.lists||[];
+  if(lists.length===0){
+    return `<span style="color:#fbbf24">No lists found yet on your connected account.
+      Create one on <a href="https://bsky.app" target="_blank" rel="noopener" style="color:#7fb2ff">bsky.app</a>,
+      then click <em>Refresh</em> below.</span>`;
+  }
+  const sel=currentUri();
+  return `Use list
+    <select id="list-pick">
+      <option value="">— pick one —</option>
+      ${lists.map(l=>`<option value="${esc(l.uri)}" ${l.uri===sel?'selected':''}>${esc(l.name)}</option>`).join('')}
+    </select>`;
+}
+function currentUri(){ try{
+  return (state._edit.groups||[])[0].conditions[0].value || '';
+}catch(_){ return ''; } }
+
+function connectForm(){
+  return `<div class="blk"><label>Your server's Bluesky account</label>
+    <div class="connectcta">
+      <p>Connect the Bluesky account this rule checks against. You'll need a
+        Bluesky App Password — make one at
+        <a href="https://bsky.app/settings/app-passwords" target="_blank"
+           rel="noopener" style="color:#7fb2ff">bsky.app/settings/app-passwords</a>
+        and paste it below. We use it to read follower / list / starter-pack info
+        and never store your real Bluesky password.</p>
+      <div class="row">
+        <input id="c-handle" type="text" placeholder="alice.bsky.social" autocomplete="username">
+        <input id="c-pass" type="password" placeholder="app password" autocomplete="off">
+        <button class="primary" id="connect">Connect</button>
+      </div>
+    </div></div>`;
+}
+function connectedAcct(a){
+  const initial=(a.display_name||a.handle||'').slice(0,1).toUpperCase()||'?';
+  const reconn = a.refresh_failed
+    ? `<div class="reconnect">Bluesky session expired. <a href="#" id="reconnect" style="color:inherit;text-decoration:underline">Re-enter your app password</a> to keep follower / list data fresh.</div>`
+    : '';
+  return `<div class="blk"><label>Your server's Bluesky account</label>
+    <div class="acct">
+      <div class="avatar">${esc(initial)}</div>
+      <div>
+        <div class="name">${esc(a.display_name||a.handle)}</div>
+        <div class="h">@${esc(a.handle)} · ${a.followers_count.toLocaleString()} followers</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+        <button id="refresh">Refresh</button>
+        <button id="reconnect-2">Re-enter password</button>
+        <button id="disconnect">Disconnect</button>
+      </div>
+    </div>
+    ${reconn}
+  </div>`;
+}
+
+function wireConnect(){
+  const c=document.getElementById('connect');
+  if(c) c.addEventListener('click',connectAccount);
+  const re=document.getElementById('reconnect-2');
+  if(re) re.addEventListener('click',showReconnectInline);
+  const re1=document.getElementById('reconnect');
+  if(re1) re1.addEventListener('click',(e)=>{ e.preventDefault(); showReconnectInline(); });
+  const d=document.getElementById('disconnect');
+  if(d) d.addEventListener('click',disconnectAccount);
+  const r=document.getElementById('refresh');
+  if(r) r.addEventListener('click',refreshAccount);
+}
+
+function showReconnectInline(){
+  // Replace the "connected" block with the connect form so the admin can
+  // paste a fresh app password without a separate disconnect.
+  const blk=document.querySelector('.blk');
+  if(blk) blk.outerHTML = connectForm();
+  wireConnect();
+  postHeight();
+}
+
+async function connectAccount(){
+  const id=document.getElementById('c-handle').value.trim().replace(/^@/,'');
+  const pw=document.getElementById('c-pass').value.trim();
+  if(!id||!pw){ postToast('Both handle and app password are required.'); return; }
+  const btn=document.getElementById('connect'); const orig=btn.textContent;
+  btn.disabled=true; btn.textContent='Connecting…';
+  try{
+    const r=await fetch(`${BASE_URL}/admin/${GUILD_ID}/accounts/connect`,
+      {method:'POST',headers:apiHeaders(),credentials:apiCreds(),
+       body:JSON.stringify({identifier:id, app_password:pw})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){ postToast(d.error||'Could not connect.'); btn.disabled=false; btn.textContent=orig; return; }
+    postToast(`Connected as @${d.handle}. Fetching lists / followers…`,'success');
+    document.getElementById('c-pass').value='';
+    await refreshFromServer(true);
+  }catch(e){ postToast('Connect error: '+e); btn.disabled=false; btn.textContent=orig; }
+}
+async function disconnectAccount(){
+  if(!confirm('Disconnect this Bluesky account from the server? Existing role rules will keep matching nobody until you reconnect.')) return;
+  const a=(state.accounts||[])[0]; if(!a) return;
+  try{
+    const r=await fetch(`${BASE_URL}/admin/${GUILD_ID}/accounts/${encodeURIComponent(a.did)}`,
+      {method:'DELETE',headers:apiHeaders(),credentials:apiCreds()});
+    if(!r.ok){ const d=await r.json().catch(()=>({})); postToast(d.error||'Could not disconnect.'); return; }
+    postToast('Disconnected.','success');
+    await refreshFromServer(true);
+  }catch(e){ postToast('Network error: '+e); }
+}
+async function refreshAccount(){
+  const a=(state.accounts||[])[0]; if(!a) return;
+  const btn=document.getElementById('refresh'); const orig=btn.textContent;
+  btn.disabled=true; btn.textContent='Refreshing…';
+  try{
+    const r=await fetch(`${BASE_URL}/admin/${GUILD_ID}/accounts/${encodeURIComponent(a.did)}/refresh`,
+      {method:'POST',headers:apiHeaders(),credentials:apiCreds()});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){ postToast(d.error||'Refresh failed.'); }
+    else postToast('Refresh queued — this can take a minute on large accounts.','success');
+  }catch(e){ postToast('Network error: '+e); }
+  finally{ btn.disabled=false; btn.textContent=orig; }
+}
+
+function choose(id){ state._preset=id; applyPreset(id); render(); }
+function applyPreset(id){
+  const p=presets().find(x=>x.id===id);
+  if(id==='custom'){
+    state._edit.grant_on_any_relation=false;
+    if(!state._edit.groups||state._edit.groups.length===0)
+      state._edit.groups=[{conditions:[c(state.targets[0].key,'eq',true)]}];
+  } else if(p&&p.make){
+    const arg = p.id==='loyal' ? state._n : (p.needs_pack||p.needs_list) ? currentUri() : undefined;
+    const r=p.make(arg);
+    state._edit.grant_on_any_relation=r.grant;
+    state._edit.groups=r.groups.map(cs=>({conditions:cs}));
+  }
+  recomputeDirty();
+}
+function applyPresetUri(id, uri){
+  state._preset=id;
+  if(id==='starter') state._edit.groups=[{conditions:[c('is_on_starter_pack','eq',uri)]}];
+  if(id==='list')    state._edit.groups=[{conditions:[c('is_on_list','eq',uri)]}];
+  state._edit.grant_on_any_relation=false;
+  recomputeDirty();
+}
+
+/* ---- advanced builder ---- */
+const HELP_BY_KEY = () => {
+  const m = {};
+  (state.targets || []).forEach(t => { m[t.key] = t.help || ''; });
+  return m;
+};
+function renderRule(){
+  const box=document.getElementById('rule'); if(!box) return;
+  const cfg=state._edit;
+  if(!cfg.groups||cfg.groups.length===0) cfg.groups=[{conditions:[c(state.targets[0].key,'eq',true)]}];
+  box.innerHTML=`<p class="d" style="margin:8px 0">Matches if a member satisfies <b>any</b> group.
+    Within a group, <b>all</b> conditions must be true.</p>`+
+    cfg.groups.map((g,gi)=>`
+    ${gi>0?'<div class="or">— OR —</div>':''}
+    <div class="grp" data-g="${gi}">
+      <div class="grp-h"><span>Group ${gi+1} — all true</span>
+        <button class="x" data-dg="${gi}">remove</button></div>
+      ${g.conditions.map((cc,ci)=>condRow(cc,gi,ci)).join('')}
+      <button data-ac="${gi}" style="margin-top:6px">+ condition</button>
+    </div>`).join('')+`<button id="ag" style="margin-top:8px">+ OR group</button>`;
+  box.querySelectorAll('[data-dg]').forEach(b=>b.onclick=()=>{ cfg.groups.splice(+b.dataset.dg,1); recomputeDirty(); renderRule(); postHeight(); });
+  box.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>{ cfg.groups[+b.dataset.ac].conditions.push(c(state.targets[0].key,'eq',true)); recomputeDirty(); renderRule(); postHeight(); });
+  const ag=document.getElementById('ag'); if(ag) ag.onclick=()=>{
+    if(cfg.groups.length>=state.limits.max_groups){ postToast(`Max ${state.limits.max_groups} groups.`); return; }
+    cfg.groups.push({conditions:[c(state.targets[0].key,'eq',true)]}); recomputeDirty(); renderRule(); postHeight(); };
+  box.querySelectorAll('[data-cond]').forEach(wireCond);
+}
+function condRow(cc,gi,ci){
+  const tgt=targetByKey(cc.target)||state.targets[0];
+  const groups=[...new Set(state.targets.map(t=>t.group))];
+  const groupLabel=g=>g==='relation'?'Relationship to my account':g==='containers'?'List / starter pack':'About the viewer';
+  const tsel=groups.map(g=>`<optgroup label="${groupLabel(g)}">`+
+    state.targets.filter(t=>t.group===g).map(t=>`<option value="${t.key}" ${t.key===cc.target?'selected':''}>${esc(t.label)}</option>`).join('')+`</optgroup>`).join('');
+  let mid;
+  if(tgt.key==='is_on_list' || tgt.key==='is_on_starter_pack'){
+    // Special: dropdown of URIs.
+    const opts=(tgt.key==='is_on_list'?state.lists:state.starter_packs)||[];
+    mid=`<select class="o" disabled style="display:none"><option value="eq" selected>equals</option></select>
+      <select class="v">
+        <option value="">— pick one —</option>
+        ${opts.map(o=>`<option value="${esc(o.uri)}" ${o.uri===cc.value?'selected':''}>${esc(o.name)}</option>`).join('')}
+      </select>`;
+  } else if(tgt.kind==='bool'){
+    const m=cc.value===true||cc.value==='true';
+    mid=`<select class="bv"><option value="1" ${m?'selected':''}>must be true</option><option value="0" ${!m?'selected':''}>must be false</option></select>`;
+  } else { const ops=opsForKind(tgt.kind);
+    mid=`<select class="o">${ops.map(o=>`<option value="${o.key}" ${o.key===cc.operator?'selected':''}>${esc(o.label)}</option>`).join('')}</select><span class="vw">${valWidget(tgt,cc)}</span>`; }
+  const help = HELP_BY_KEY()[cc.target] || '';
+  return `<div class="cond" data-cond data-g="${gi}" data-c="${ci}"><select class="t">${tsel}</select>${mid}
+    <button class="x" data-del>×</button><div class="hint">${esc(help)}</div></div>`;
+}
+function valWidget(tgt,cc){ const op=opByKey(cc.operator)||{};
+  if(op.value_is_list) return `<input type="text" class="v" placeholder="bsky.social, example.com" value="${esc(Array.isArray(cc.value)?cc.value.join(', '):'')}">`;
+  if(op.needs_value_end) return `<input type="number" class="v" placeholder="min" value="${cc.value??''}"> and <input type="number" class="ve" placeholder="max" value="${cc.value_end??''}">`;
+  if(tgt.kind==='int') return `<input type="number" class="v" value="${cc.value??''}">`;
+  return `<input type="text" class="v" value="${esc(cc.value==null?'':cc.value)}">`; }
+function wireCond(row){
+  const gi=+row.dataset.g, ci=+row.dataset.c, cfg=state._edit, cc=cfg.groups[gi].conditions[ci];
+  row.querySelector('.t').onchange=e=>{ cc.target=e.target.value; const t=targetByKey(cc.target);
+    if(t.key==='is_on_list'||t.key==='is_on_starter_pack'){ cc.operator='eq'; cc.value=''; }
+    else if(t.kind==='bool'){ cc.operator='eq'; cc.value=true; }
+    else { const v=opsForKind(t.kind);
+      if(!v.find(x=>x.key===cc.operator)) cc.operator=v[0].key; cc.value=''; }
+    cc.value_end=null; recomputeDirty(); renderRule(); postHeight(); };
+  const bv=row.querySelector('.bv'); if(bv) bv.onchange=e=>{ cc.operator='eq'; cc.value=e.target.value==='1'; recomputeDirty(); };
+  const o=row.querySelector('.o'); if(o && !o.disabled) o.onchange=e=>{ cc.operator=e.target.value; cc.value_end=null; recomputeDirty(); renderRule(); postHeight(); };
+  // For list/pack the .v is itself a <select>; for others the .v/.ve are inputs.
+  row.querySelectorAll('.v,.ve').forEach(inp=>{
+    const ev = inp.tagName==='SELECT' ? 'change' : 'input';
+    inp.addEventListener(ev,()=>{ const t=targetByKey(cc.target),op=opByKey(cc.operator)||{};
+      if(inp.classList.contains('ve')) cc.value_end=inp.value===''?null:Number(inp.value);
+      else if(t.key==='is_on_list'||t.key==='is_on_starter_pack') cc.value=inp.value;
+      else if(op.value_is_list) cc.value=inp.value.split(',').map(s=>s.trim()).filter(Boolean);
+      else if(t.kind==='int') cc.value=inp.value===''?'':Number(inp.value);
+      else cc.value=inp.value; recomputeDirty(); });
+  });
+  row.querySelector('[data-del]').onclick=()=>{ cfg.groups[gi].conditions.splice(ci,1);
+    if(cfg.groups[gi].conditions.length===0) cfg.groups.splice(gi,1);
+    if(cfg.groups.length===0) cfg.groups=[{conditions:[c(state.targets[0].key,'eq',true)]}];
+    recomputeDirty(); renderRule(); postHeight(); };
+}
+
+async function setViewPerm(next){
+  const prev=(state.users&&state.users.view_permission)||'managers';
+  if(next===prev) return;
+  if(!state.users) state.users={url:'',view_permission:prev};
+  state.users.view_permission=next;
+  supPending=true; render();
+  try{
+    const r=await fetch(`${BASE_URL}/admin/${GUILD_ID}/view-permission`,
+      {method:'POST',headers:apiHeaders(),credentials:apiCreds(),
+       body:JSON.stringify({view_permission:next})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){ state.users.view_permission=prev; render();
+      postToast(d.error||'Could not update users-page access.'); return; }
+    render();
+    const pill=document.getElementById('vp-saved');
+    if(pill){ pill.classList.add('show');
+      clearTimeout(setViewPerm._t);
+      setViewPerm._t=setTimeout(()=>pill.classList.remove('show'),1800); }
+  }catch(e){ state.users.view_permission=prev; render();
+    postToast('Network error: '+e); }
+  finally{ supPending=false; }
+}
+
+async function doPreview(){
+  const el=document.getElementById('count'); if(!el) return;
+  try{
+    const r=await fetch(`${BASE_URL}/admin/${GUILD_ID}/role/${ROLE_ID}/preview`,
+      {headers:apiHeaders(),credentials:apiCreds(),cache:'no-store'});
+    const d=await r.json();
+    if(!r.ok||d.available===false){ el.textContent=''; return; }
+    el.innerHTML=`<span class="ok">${d.matching}</span> of ${d.linked} linked member(s) match`
+      +(dirty?` · <span style="color:#fbbf24">Save to apply</span>`:``);
+  }catch(_){ el.textContent=''; }
+  postHeight();
+}
+function autoPreview(){ doPreview(); }
+async function doPreviewEdit(){
+  const el=document.getElementById('count'); const btn=document.getElementById('preview');
+  if(!btn) return;
+  const cfg=state._edit;
+  const payload={ bsky_account_did:cfg.bsky_account_did,
+    grant_on_any_relation:cfg.grant_on_any_relation,
+    groups: cfg.grant_on_any_relation?[]:(cfg.groups||[]) };
+  btn.disabled=true; const orig=btn.textContent; btn.textContent='Previewing…';
+  try{
+    const r=await fetch(`${BASE_URL}/admin/${GUILD_ID}/role/${ROLE_ID}/preview`,
+      {method:'POST',headers:apiHeaders(),credentials:apiCreds(),body:JSON.stringify(payload)});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){ postToast(d.error||('Preview failed (HTTP '+r.status+')')); return; }
+    if(d.available===false){ el.textContent=d.reason||'Preview unavailable.'; postHeight(); return; }
+    el.innerHTML=`<span class="ok">${d.matching}</span> of ${d.linked} linked member(s) match`
+      +(dirty?` · <span style="color:#fbbf24">Preview of unsaved rule</span>`:``);
+  }catch(e){ postToast('Network error: '+e); }
+  finally{ btn.disabled=false; btn.textContent=orig; postHeight(); }
+}
+async function doSave(){
+  const cfg=state._edit;
+  if(!cfg.grant_on_any_relation && (cfg.groups||[]).length>0 && !cfg.bsky_account_did){
+    postToast('Pick the Bluesky account this rule checks against before saving — '
+      +'without one it grants the role to nobody.');
+    return;
+  }
+  // Defensive: list/pack URIs must be non-empty when their condition is present.
+  for(const g of (cfg.groups||[])){
+    for(const cc of (g.conditions||[])){
+      if((cc.target==='is_on_list'||cc.target==='is_on_starter_pack') && !cc.value){
+        postToast('Pick a list / starter pack from the dropdown before saving.');
+        return;
+      }
+    }
+  }
+  const payload={ rule_tree_version:state.rule_tree_version,
+    bsky_account_did:cfg.bsky_account_did, grant_on_any_relation:cfg.grant_on_any_relation,
+    groups: cfg.grant_on_any_relation?[]:(cfg.groups||[]) };
+  try{
+    const r=await fetch(`${BASE_URL}/admin/${GUILD_ID}/role/${ROLE_ID}/save`,
+      {method:'POST',headers:apiHeaders(),credentials:apiCreds(),body:JSON.stringify(payload)});
+    const d=await r.json().catch(()=>({}));
+    if(r.status===409){ postToast('Changed in another tab. Reload to get the latest, then re-apply.'); return; }
+    if(!r.ok){ postToast(d.error||('Save failed (HTTP '+r.status+')')); return; }
+    state.rule_tree_version=d.rule_tree_version; state.config=JSON.parse(JSON.stringify(cfg));
+    setDirty(false); postSaved();
+    postToast('Saved ✓  Roles update within a minute. Members must link Bluesky using the link above.','success');
+    autoPreview();
+  }catch(e){ postToast('Network error: '+e); }
+}
+
+async function refreshFromServer(force){
+  if(!state||refreshInFlight) return; refreshInFlight=true;
+  try{
+    const r=await fetch(`${BASE_URL}/admin/${GUILD_ID}/role/${ROLE_ID}/data`,
+      {headers:apiHeaders(),credentials:apiCreds(),cache:'no-store'});
+    if(r.ok){ const d=await r.json();
+      const acctCh=JSON.stringify(d.accounts)!==JSON.stringify(state.accounts);
+      const listsCh=JSON.stringify(d.lists)!==JSON.stringify(state.lists);
+      const packsCh=JSON.stringify(d.starter_packs)!==JSON.stringify(state.starter_packs);
+      const cfgCh=JSON.stringify(d.config)!==JSON.stringify(state.config);
+      const supCh=JSON.stringify(d.users)!==JSON.stringify(state.users);
+      if(acctCh) state.accounts=d.accounts;
+      if(listsCh) state.lists=d.lists;
+      if(packsCh) state.starter_packs=d.starter_packs;
+      const applySup = supCh && !supPending;
+      if(applySup) state.users=d.users;
+      if(cfgCh&&!dirty){ state.config=d.config; state._edit=JSON.parse(JSON.stringify(d.config));
+        state.rule_tree_version=d.rule_tree_version; state._preset=detectPreset(state._edit); state._n=guessN(state._edit); }
+      if(force||acctCh||listsCh||packsCh||applySup||(cfgCh&&!dirty)){ render(); autoPreview(); } }
+  }catch(_){}
+  finally{ refreshInFlight=false; }
+}
+window.addEventListener('message',e=>{ if(e.data&&e.data.type==='rl:visible') refreshFromServer(); });
+window.addEventListener('focus',()=>refreshFromServer());
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) refreshFromServer(); });
+if(!IS_EMBEDDED) window.addEventListener('beforeunload',e=>{ if(dirty){ e.preventDefault(); e.returnValue=''; } });
+
+load();
+</script>
+</body>
+</html>

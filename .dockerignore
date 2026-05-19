@@ -1,0 +1,38 @@
+# Mirror .gitignore + extra build-context exclusions. Anything COPY'd by the
+# Dockerfile must still pass through this filter, so removing entries here can
+# silently bloat the image or smuggle secrets into it.
+
+target/
+**/*.rs.bk
+
+.env
+.env.*
+!.env.example
+
+.git/
+.gitignore
+.gitattributes
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*.iml
+
+.DS_Store
+Thumbs.db
+
+pgdata/
+backups/
+private/
+
+.claude/
+node_modules/
+coverage/
+
+*.md
+!README.md
+LICENSE.txt
+
+docker-compose.override.yml
+compose.override.yml

@@ -1,0 +1,27 @@
+# Rust build artifacts
+/target
+**/*.rs.bk
+
+# Secrets — must never be committed
+.env
+.env.*
+!.env.example
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.iml
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Docker volumes / local data
+pgdata/
+backups/
+private/
+
+# Tooling caches
+.claude/
