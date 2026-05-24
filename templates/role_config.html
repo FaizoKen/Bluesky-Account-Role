@@ -146,7 +146,6 @@
 <script>
 const BASE_URL="__BASE_URL__", GUILD_ID="__GUILD_ID__", ROLE_ID="__ROLE_ID__";
 const IFRAME_TOKEN="__IFRAME_TOKEN__", IS_EMBEDDED=!!IFRAME_TOKEN;
-const VERIFY_URL = BASE_URL + "/verify";
 
 function postToHost(m){ if(!IS_EMBEDDED) return; try{ parent.postMessage(m,'*'); }catch(_){} }
 function postHeight(){ postToHost({type:'rl:resize',height:Math.max(
@@ -260,6 +259,10 @@ function render(){
   const cfg=state._edit, app=document.getElementById('app');
   const accts=state.accounts||[];
   const cur=state._preset, showAcct=needsAccount(cur);
+  // Per-guild verify link from the server (carries ?guild=<id> so a member
+  // arriving here auto-clears any opt-out for THIS server). Falls back to
+  // the plain /verify path if the server didn't send one.
+  const verifyUrl=state.verify_url||(BASE_URL+"/verify");
   // Auto-bind to the first connected account if a relation-rule is picked
   // and no account is selected — keeps the "newbie click → save" path 0-step.
   if(showAcct && accts.length>0 &&
@@ -325,8 +328,8 @@ function render(){
     <div class="share"><b>One thing your members must do:</b> they have to link
       their Bluesky account here once with a Bluesky App Password — until they
       do, they won't get the role even if they qualify.
-      <div class="copybox"><code id="vurl">${esc(VERIFY_URL)}</code>
-        <a class="btn-open" href="${esc(VERIFY_URL)}" target="_blank" rel="noopener noreferrer">Open</a>
+      <div class="copybox"><code id="vurl">${esc(verifyUrl)}</code>
+        <a class="btn-open" href="${esc(verifyUrl)}" target="_blank" rel="noopener noreferrer">Open</a>
         <button id="copy">Copy link</button></div>
     </div>
     ${usersBlk}
@@ -340,7 +343,7 @@ function render(){
 
   app.querySelectorAll('input[name=who]').forEach(r=>r.addEventListener('change',()=>choose(r.value)));
   wireConnect();
-  wireCopy('copy', VERIFY_URL);
+  wireCopy('copy', verifyUrl);
   wireCopy('copysup', sup.url);
   app.querySelectorAll('input[name=vp]').forEach(r=>r.addEventListener('change',()=>setViewPerm(r.value)));
   const ln=document.getElementById('loyaln'); if(ln) ln.addEventListener('input',e=>{

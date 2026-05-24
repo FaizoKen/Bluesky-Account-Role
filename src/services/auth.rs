@@ -210,8 +210,11 @@ pub async fn guild_members(
         })
         .unwrap_or_default();
 
+    // `plugin` excludes members who have opted out of this plugin in this
+    // guild — so the public users page won't list viewers who've disabled
+    // Bluesky-Account-Role for this server.
     let url = format!(
-        "{}/auth/guild_members?guild_id={guild_id}",
+        "{}/auth/guild_members?guild_id={guild_id}&plugin=bluesky-account-role",
         state.config.auth_gateway_url
     );
     let resp = state

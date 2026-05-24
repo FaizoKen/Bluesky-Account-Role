@@ -626,7 +626,12 @@ pub async fn role_config_data(
             "url": format!("{}/users/{}", state.config.base_url, guild_id),
             "view_permission": view_permission,
         },
-        "verify_url": format!("{}/verify", state.config.base_url),
+        // Guild IDs are Discord snowflakes (digits only) so they're safe to
+        // splice directly into the query string without percent-encoding.
+        // The verify page consumes ?guild=<id> to auto-clear any opt-out for
+        // this server, so a per-guild link shared by an admin both verifies
+        // the user AND ensures the role applies to that server.
+        "verify_url": format!("{}/verify?guild={}", state.config.base_url, guild_id),
     })))
 }
 
