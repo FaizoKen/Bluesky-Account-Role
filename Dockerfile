@@ -31,9 +31,12 @@ COPY --from=builder /app/target/release/bluesky-account-role /usr/local/bin/
 
 EXPOSE 8095
 
+# The port comes from LISTEN_ADDR (production binds 40xx, not EXPOSE's
+# default), falling back to the app's own default when it is unset.
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
-    CMD curl --fail --silent --max-time 2 \
-        http://127.0.0.1:8095/bluesky-account-role/health || exit 1
+    CMD addr="${LISTEN_ADDR:-0.0.0.0:8095}"; \
+        curl --fail --silent --max-time 2 \
+        "http://127.0.0.1:${addr##*:}/bluesky-account-role/health" || exit 1
 
 USER app:app
 
