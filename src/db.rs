@@ -8,13 +8,24 @@ use crate::config::DbPoolConfig;
 
 const POOL_MAX_LIFETIME: Duration = Duration::from_secs(30 * 60);
 
+/// Prepared statements each pooled connection keeps. When the cache is full
+/// sqlx closes the least recently used one, so a backend never holds more
+/// plans than this.
+///
+/// Never set it to 0. With the cache off, sqlx 0.8 still prepares every
+/// query as a new named statement (`sqlx_s_N`) and never closes it, so each
+/// backend keeps one plan per query it has run until `POOL_MAX_LIFETIME`
+/// recycles the connection. That OOM-killed Kick-Channel-Role's 256 MB DB
+/// container on 2026-10-29. Disabling the cache never made pgBouncer
+/// transaction mode safe either: a named statement is still parsed in one
+/// sync and executed in the next. Behind pgBouncer, run 1.21+ with
+/// `max_prepared_statements` at least this high.
+const STATEMENT_CACHE_CAPACITY: usize = 100;
+
 pub async fn create_pool(database_url: &str, cfg: &DbPoolConfig) -> PgPool {
-    // Disable sqlx's prepared-statement cache so we're safe under pgBouncer
-    // transaction-pool mode. See Kick-Channel-Role/src/db.rs for the full
-    // rationale.
     let connect_options = PgConnectOptions::from_str(database_url)
         .expect("invalid DATABASE_URL")
-        .statement_cache_capacity(0);
+        .statement_cache_capacity(STATEMENT_CACHE_CAPACITY);
 
     PgPoolOptions::new()
         .max_connections(cfg.max_connections)
